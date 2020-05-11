@@ -1,9 +1,19 @@
 package model
 
+type DocumentType string
+
+const (
+	ServiceType DocumentType = "Service"
+)
+
+type Documents struct {
+	Documents []Document `json:"documents"`
+}
+
 type Document struct {
 	Id          string            `json:"id" yaml:"id"`
 	Name        string            `json:"name" yaml:"name"`
-	Type        string            `json:"type" yaml:"type"`
+	Type        DocumentType      `json:"type" yaml:"type"`
 	Owner       string            `json:"owner" yaml:"owner"`
 	Description string            `json:"description" yaml:"description"`
 	ShortName   string            `json:"shortName" yaml:"short_name"`

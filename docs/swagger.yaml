@@ -1,0 +1,160 @@
+definitions:
+  model.ApiError:
+    properties:
+      message:
+        type: string
+    type: object
+  model.DependsOn:
+    properties:
+      external:
+        items:
+          $ref: '#/definitions/model.DependsOnService'
+        type: array
+      internal:
+        items:
+          $ref: '#/definitions/model.DependsOnService'
+        type: array
+    type: object
+  model.DependsOnService:
+    properties:
+      serviceName:
+        type: string
+      why:
+        type: string
+    type: object
+  model.Document:
+    properties:
+      contact:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      links:
+        additionalProperties:
+          type: string
+        type: object
+      name:
+        type: string
+      owner:
+        type: string
+      service:
+        $ref: '#/definitions/model.Service'
+        type: object
+      shortName:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      type:
+        type: string
+    type: object
+  model.Documents:
+    properties:
+      documents:
+        items:
+          $ref: '#/definitions/model.Document'
+        type: array
+    type: object
+  model.Provide:
+    properties:
+      description:
+        type: string
+      port:
+        type: integer
+      protocol:
+        type: string
+      serviceName:
+        type: string
+      transportProtocol:
+        type: string
+    type: object
+  model.Service:
+    properties:
+      dependsOn:
+        $ref: '#/definitions/model.DependsOn'
+        type: object
+      provides:
+        items:
+          $ref: '#/definitions/model.Provide'
+        type: array
+    type: object
+info:
+  contact: {}
+  license: {}
+paths:
+  /documents:
+    get:
+      description: Get all stored documents
+      operationId: get-documents
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Documents'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ApiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ApiError'
+      summary: Get all stored documents
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads a single document
+      operationId: upload-document
+      parameters:
+      - description: document file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Document'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ApiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ApiError'
+      summary: Uploads a single document
+  /documents/{id}:
+    get:
+      description: Get all stored documents
+      operationId: get-document-by-id
+      parameters:
+      - description: document id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Document'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ApiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ApiError'
+      summary: Get all stored documents
+swagger: "2.0"

@@ -1,0 +1,25 @@
+id: usr
+name: User Service
+type: Service
+owner: Team Integration
+description: The central user access.
+short_name: USR
+contact: Team Integration
+tags: []
+links:
+  homepage: http://wiki.local/user
+  buildchain: http://ci.local/user
+service:
+  provides:
+    - description: Access to all user information
+      service_name: user-service
+      protocol: https
+      port: 9443
+      transport_protocol: tcp
+  depends_on:
+    internal:
+      - service_name: user-db
+        why: Need to talk to my database.
+    external:
+      - service_name: heroku
+        why: My db is there

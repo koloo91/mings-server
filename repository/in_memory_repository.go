@@ -1,9 +1,13 @@
 package repository
 
 import (
-	"fmt"
+	"errors"
 	"github.com/koloo91/mings-server/model"
 	"sync"
+)
+
+var (
+	ErrDocumentNotFound = errors.New("document not found")
 )
 
 type InMemoryRepository struct {
@@ -38,7 +42,7 @@ func (r *InMemoryRepository) ById(id string) (model.Document, error) {
 	document, exists := r.documents[id]
 
 	if !exists {
-		return document, fmt.Errorf("document with id '%s' does not exist", id)
+		return document, ErrDocumentNotFound
 	}
 
 	return document, nil
