@@ -1,6 +1,13 @@
 package repository
 
-import "github.com/koloo91/mings-server/model"
+import (
+	"errors"
+	"github.com/koloo91/mings-server/model"
+)
+
+var (
+	ErrDocumentNotFound = errors.New("document not found")
+)
 
 type Repository interface {
 	Get() ([]model.Document, error)

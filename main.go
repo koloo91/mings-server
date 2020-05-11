@@ -10,7 +10,8 @@ import (
 func main() {
 	router := controller.SetupRoutes()
 
-	service.Repository = repository.NewInMemoryRepository()
+	//service.Repository = repository.NewInMemoryRepository()
+	service.Repository = repository.NewFileRepository("storage")
 
 	log.Fatal(router.Run(":9000"))
 }

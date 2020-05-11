@@ -1,13 +1,8 @@
 package repository
 
 import (
-	"errors"
 	"github.com/koloo91/mings-server/model"
 	"sync"
-)
-
-var (
-	ErrDocumentNotFound = errors.New("document not found")
 )
 
 type InMemoryRepository struct {
