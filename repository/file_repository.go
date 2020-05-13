@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/koloo91/mings-server/model"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -28,52 +29,64 @@ func NewFileRepository(baseDir string) *FileRepository {
 func (r *FileRepository) Get() ([]model.Document, error) {
 	returnValue := make([]model.Document, 0, len(r.documents))
 
-	if _, err := os.Stat(fmt.Sprintf("./%s", r.baseDir)); os.IsNotExist(err) {
+	if _, err := os.Stat(fmt.Sprintf(r.baseDir)); os.IsNotExist(err) {
 		return returnValue, nil
 	}
 
 	if r.refreshCache {
-		fileInfos, err := ioutil.ReadDir(fmt.Sprintf("./%s", r.baseDir))
-		if err != nil {
-			return returnValue, err
-		}
+		r.loadData()
+	}
 
-		for _, fileInfo := range fileInfos {
-			if fileInfo.IsDir() {
-				continue
-			}
-
-			fileName := fmt.Sprintf("./%s/%s", r.baseDir, fileInfo.Name())
-			file, err := os.Open(fileName)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-
-			fileContent, err := ioutil.ReadAll(file)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-
-			var document model.Document
-			if err := json.Unmarshal(fileContent, &document); err != nil {
-				log.Println(err)
-				continue
-			}
-
-			returnValue = append(returnValue, document)
-		}
-
-		r.refreshCache = false
+	for _, document := range r.documents {
+		returnValue = append(returnValue, document)
 	}
 
 	return returnValue, nil
 }
 
+func (r *FileRepository) loadData() {
+	logrus.Info("Refreshing cache")
+	fileInfos, err := ioutil.ReadDir(r.baseDir)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	for _, fileInfo := range fileInfos {
+		if fileInfo.IsDir() {
+			continue
+		}
+
+		fileName := fmt.Sprintf("%s/%s", r.baseDir, fileInfo.Name())
+		file, err := os.Open(fileName)
+		if err != nil {
+			logrus.Error(err)
+			continue
+		}
+
+		fileContent, err := ioutil.ReadAll(file)
+		if err != nil {
+			logrus.Debug(err)
+			continue
+		}
+
+		var document model.Document
+		if err := json.Unmarshal(fileContent, &document); err != nil {
+			logrus.Debug(err)
+			continue
+		}
+
+		r.documents[document.Id] = document
+	}
+
+	r.refreshCache = false
+}
+
 func (r *FileRepository) Save(document model.Document) error {
-	if _, err := os.Stat(fmt.Sprintf("./%s", r.baseDir)); os.IsNotExist(err) {
-		os.Mkdir(fmt.Sprintf("./%s", r.baseDir), os.ModePerm)
+	if _, err := os.Stat(fmt.Sprintf("%s", r.baseDir)); os.IsNotExist(err) {
+		if err := os.Mkdir(r.baseDir, os.ModePerm); err != nil {
+			return err
+		}
 	}
 
 	r.mutex.Lock()
@@ -84,7 +97,7 @@ func (r *FileRepository) Save(document model.Document) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(fmt.Sprintf("./%s/%s.json", r.baseDir, document.Id), documentBytes, os.ModePerm); err != nil {
+	if err := ioutil.WriteFile(fmt.Sprintf("%s/%s.json", r.baseDir, document.Id), documentBytes, os.ModePerm); err != nil {
 		return err
 	}
 
@@ -94,6 +107,10 @@ func (r *FileRepository) Save(document model.Document) error {
 }
 
 func (r *FileRepository) ById(id string) (model.Document, error) {
+	if r.refreshCache {
+		r.loadData()
+	}
+
 	document, exists := r.documents[id]
 
 	if !exists {
@@ -101,4 +118,37 @@ func (r *FileRepository) ById(id string) (model.Document, error) {
 	}
 
 	return document, nil
+}
+
+func (r *FileRepository) GetByDependsOn(dependsOn string) ([]model.Document, error) {
+	if r.refreshCache {
+		r.loadData()
+	}
+
+	returnValue := make([]model.Document, 0, len(r.documents))
+	dependsOnToLower := strings.ToLower(dependsOn)
+
+	for _, document := range r.documents {
+		if documentDependsOn(dependsOnToLower, document) {
+			returnValue = append(returnValue, document)
+		}
+	}
+
+	return returnValue, nil
+}
+
+func documentDependsOn(dependsOn string, document model.Document) bool {
+	for _, dependency := range document.Service.DependsOn.Internal {
+		if strings.ToLower(dependency.ServiceName) == dependsOn {
+			return true
+		}
+	}
+
+	for _, dependency := range document.Service.DependsOn.External {
+		if strings.ToLower(dependency.ServiceName) == dependsOn {
+			return true
+		}
+	}
+
+	return false
 }

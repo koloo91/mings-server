@@ -35,7 +35,16 @@ func (suite *BaseSuite) SetupSuite() {
 
 func (suite *BaseSuite) SetupTest() {
 	log.Println("Setup test")
-	service.Repository = repository.NewInMemoryRepository()
+
+	os.RemoveAll("./storage")
+
+	//service.Repository = repository.NewInMemoryRepository()
+	service.Repository = repository.NewFileRepository("./storage")
+}
+
+func (suite *BaseSuite) TearDownTest() {
+	log.Println("Tear down test")
+	os.RemoveAll("./storage")
 }
 
 func TestBaseSuiteTest(t *testing.T) {

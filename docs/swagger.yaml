@@ -88,6 +88,11 @@ paths:
     get:
       description: Get all stored documents
       operationId: get-documents
+      parameters:
+      - description: depends on
+        in: query
+        name: depends_on
+        type: string
       produces:
       - application/json
       responses:

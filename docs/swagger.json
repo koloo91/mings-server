@@ -13,6 +13,14 @@
                 ],
                 "summary": "Get all stored documents",
                 "operationId": "get-documents",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "depends on",
+                        "name": "depends_on",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

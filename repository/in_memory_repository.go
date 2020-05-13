@@ -42,3 +42,7 @@ func (r *InMemoryRepository) ById(id string) (model.Document, error) {
 
 	return document, nil
 }
+
+func (r *InMemoryRepository) GetByDependsOn(dependsOn string) ([]model.Document, error) {
+	panic("implement me")
+}

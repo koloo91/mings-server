@@ -11,6 +11,10 @@ func GetAll() ([]model.Document, error) {
 	return Repository.Get()
 }
 
+func GetByDependsOn(dependsOn string) ([]model.Document, error) {
+	return Repository.GetByDependsOn(dependsOn)
+}
+
 func Create(document model.Document) error {
 	return Repository.Save(document)
 }
