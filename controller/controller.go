@@ -28,8 +28,6 @@ func SetupRoutes() *gin.Engine {
 
 	router.Use(Logger(), cors.Default(), gin.Recovery())
 
-	// TODO: cors and logging
-
 	router.GET("/documents", all)
 	router.POST("/documents", upload)
 	router.GET("/documents/:id", byId)
